@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Trắc Nghiệm: Phân Bón Hữu Cơ - Hóa Học 11</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <!-- Canvas Confetti for Celebration Effect -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Tone.js for Native Web Sound Effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .custom-gradient {
+      background: linear-gradient(135deg, #059669 0%, #10b981 50%, #047857 100%);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    .option-btn {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .option-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.2);
+    }
+    .animate-bounce-short {
+      animation: bounceShort 0.5s ease-in-out;
+    }
+    @keyframes bounceShort {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 sm:p-6 text-slate-800">
+
+  <!-- Main Game Card Container -->
+  <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-emerald-100 flex flex-direction-column">
+    
+    <!-- HEADER BAR -->
+    <header class="custom-gradient px-6 py-5 text-white flex items-center justify-between shadow-md">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+          <i class="fa-solid fa-seedling text-yellow-300 text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg sm:text-xl tracking-tight leading-none">NÔNG DÂN THÔNG THÁI</h1>
+          <p class="text-xs text-emerald-100 font-medium mt-1">Chuyên Đề Hóa Học 11 • Phân Bón Hữu Cơ</p>
+        </div>
+      </div>
+      <!-- Sound Toggle Switch -->
+      <button id="sound-btn" onclick="toggleSound()" class="w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-all text-white">
+        <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+      </button>
+    </header>
+
+    <!-- SCREEN 1: WELCOME SCREEN -->
+    <div id="welcome-screen" class="p-8 sm:p-10 flex flex-col items-center text-center">
+      <div class="w-24 h-24 rounded-full bg-emerald-50 border-4 border-emerald-100 flex items-center justify-center mb-6 shadow-inner text-emerald-600">
+        <i class="fa-solid fa-wheat-awn text-5xl"></i>
+      </div>
+      
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-3">Thử Thách Kiến Thức Nông Nghiệp Xanh</h2>
+      <p class="text-slate-600 text-sm sm:text-base max-w-md mb-8 leading-relaxed">
+        Khám phá 10 câu hỏi trắc nghiệm chuyên sâu về nguồn gốc, phân loại, quy trình ủ hoai mục và ứng dụng cải tạo đất bền vững của phân bón hữu cơ!
+      </p>
+
+      <div class="grid grid-cols-2 gap-4 w-full max-w-md mb-8 text-left">
+        <div class="bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-100 flex items-center gap-3">
+          <i class="fa-solid fa-circle-question text-emerald-600 text-xl"></i>
+          <div>
+            <span class="block text-xs font-bold text-slate-400 uppercase">Số câu hỏi</span>
+            <span class="font-extrabold text-slate-800 text-sm">10 Câu Trắc Nghiệm</span>
+          </div>
+        </div>
+        <div class="bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-100 flex items-center gap-3">
+          <i class="fa-solid fa-trophy text-amber-500 text-xl"></i>
+          <div>
+            <span class="block text-xs font-bold text-slate-400 uppercase">Thang điểm</span>
+            <span class="font-extrabold text-slate-800 text-sm">100 Điểm Tối Đa</span>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="startGame()" class="w-full max-w-md py-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 text-lg">
+        <span>BẮT ĐẦU CHƠI NGAY</span>
+        <i class="fa-solid fa-circle-play"></i>
+      </button>
+    </div>
+
+    <!-- SCREEN 2: QUIZ INTERACTION SCREEN -->
+    <div id="quiz-screen" class="p-6 sm:p-8 hidden flex-col">
+      <!-- Progress and Score Bar -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span id="question-badge" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl">
+            Câu 1 / 10
+          </span>
+        </div>
+        <div class="flex items-center gap-2 bg-amber-50 border border-amber-200/60 px-3 py-1.5 rounded-xl">
+          <i class="fa-solid fa-star text-amber-500 text-xs"></i>
+          <span id="score-text" class="text-xs font-extrabold text-amber-800">Điểm: 0</span>
+        </div>
+      </div>
+
+      <!-- Progress Line Bar -->
+      <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-6">
+        <div id="progress-bar" class="bg-emerald-500 h-full w-10 transition-all duration-300"></div>
+      </div>
+
+      <!-- Question Text -->
+      <h3 id="question-text" class="text-lg sm:text-xl font-bold text-slate-900 mb-6 leading-snug min-h-[56px]">
+        Đang tải câu hỏi...
+      </h3>
+
+      <!-- Options List -->
+      <div id="options-container" class="space-y-3 mb-6">
+        <!-- Dynamic options will be rendered here -->
+      </div>
+
+      <!-- Explanation Box -->
+      <div id="explanation-box" class="hidden p-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm leading-relaxed mb-6 transition-all">
+        <div class="flex items-center gap-2 font-bold mb-1" id="explanation-title">
+          <i class="fa-solid fa-lightbulb"></i>
+          <span>Giải thích chi tiết:</span>
+        </div>
+        <p id="explanation-desc" class="text-slate-600"></p>
+      </div>
+
+      <!-- Action Footer Button -->
+      <div class="flex justify-end pt-2">
+        <button id="next-btn" onclick="nextQuestion()" class="hidden px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold rounded-xl shadow-md transition-all items-center gap-2">
+          <span>Câu Tiếp Theo</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: RESULT SUMMARY SCREEN -->
+    <div id="result-screen" class="p-8 sm:p-10 hidden flex-col items-center text-center">
+      <div id="badge-icon-container" class="w-24 h-24 rounded-full bg-amber-50 border-4 border-amber-200 flex items-center justify-center mb-4 shadow-lg">
+        <i id="badge-icon" class="fa-solid fa-trophy text-5xl text-amber-500"></i>
+      </div>
+
+      <span id="rank-tag" class="text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 mb-2">
+        Xếp hạng Nông Dân
+      </span>
+
+      <h2 id="rank-title" class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">
+        Chuyên Gia Phân Bón Hữu Cơ
+      </h2>
+
+      <div class="my-6">
+        <span class="text-xs font-bold text-slate-400 block uppercase mb-1">Điểm số đạt được</span>
+        <div id="final-score" class="text-5xl font-black text-emerald-600">
+          100 / 100
+        </div>
+      </div>
+
+      <p id="rank-description" class="text-slate-600 text-sm max-w-md mb-8 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        Bạn đã hoàn thành xuất sắc thử thách! Kiến thức về nông nghiệp bền vững của bạn thật đáng nếp phục.
+      </p>
+
+      <button onclick="restartGame()" class="w-full max-w-md py-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 text-lg">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span>CHƠI LẠI TỪ ĐẦU</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    // Audio State & Tone.js Synthesizers
+    let soundEnabled = true;
+    let synth, correctSynth, wrongSynth;
+
+    function initAudio() {
+      try {
+        if (!synth && window.Tone) {
+          Tone.start();
+          synth = new Tone.Synth().toDestination();
+          correctSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+          wrongSynth = new Tone.MembraneSynth().toDestination();
+        }
+      } catch (e) {
+        console.log("Audio Context initialization deferred");
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      if (soundEnabled) {
+        icon.className = 'fa-solid fa-volume-high';
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark';
+      }
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        if (type === 'correct' && correctSynth) {
+          correctSynth.triggerAttackRelease(["C5", "E5", "G5"], "8n");
+        } else if (type === 'wrong' && wrongSynth) {
+          wrongSynth.triggerAttackRelease("G2", "8n");
+        } else if (type === 'finish' && correctSynth) {
+          correctSynth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "4n");
+        }
+      } catch (e) {
+        // Fallback silently if web audio blocked
+      }
+    }
+
+    // Question Bank: 10 Standard Questions on Organic Fertilizers (Grade 11 Specialized Chemistry)
+    const questions = [
+      {
+        question: "1. Nguồn gốc chính của các loại phân bón hữu cơ là gì?",
+        options: [
+          "A. Sản xuất hoàn toàn từ các hóa chất tổng hợp trong nhà máy",
+          "B. Chất thải động vật, tàn dư thực vật, rác thải sinh hoạt hữu cơ",
+          "C. Khai thác trực tiếp từ các quặng khoáng sản lòng đất",
+          "D. Tổng hợp từ khí quyển và nước biển sâu"
+        ],
+        answer: 1,
+        explanation: "Phân bón hữu cơ chứa các chất dinh dưỡng dạng hợp chất hữu cơ, được tạo thành từ phân chuồng, phế phụ phẩm nông nghiệp, phân xanh và rác sinh học."
+      },
+      {
+        question: "2. Phân xanh được chế biến và sử dụng chủ yếu theo phương pháp nào?",
+        options: [
+          "A. Chưng cất trong lò nung ở 1000°C",
+          "B. Cày vùi trực tiếp các cây xanh tươi (nhất là cây họ Đậu) vào đất",
+          "C. Trộn với acid sulfuric đặc để hòa tan",
+          "D. Cô đặc chân không thành dạng tinh thể"
+        ],
+        answer: 1,
+        explanation: "Phân xanh là dạng phân hữu cơ sử dụng các cây xanh tươi (đặc biệt là cây họ Đậu có khả năng cố định N2) vùi vào đất để phân hủy tạo mùn."
+      },
+      {
+        question: "3. Quá trình ủ hoai mục phân chuồng mang lại lợi ích quan trọng nhất là gì?",
+        options: [
+          "A. Làm tăng khối lượng của phân bón lên gấp đôi",
+          "B. Chuyển hóa phân hữu cơ thành phân bón vô cơ hoàn toàn",
+          "C. Tiêu diệt mầm bệnh, hạt cỏ dại và phân giải chất phức tạp thành dạng dễ tiêu",
+          "D. Làm mất hoàn toàn các nguyên tố dinh dưỡng vi lượng"
+        ],
+        answer: 2,
+        explanation: "Ủ hoai mục dưới tác động vi sinh vật giúp phân giải hợp chất hữu cơ phức tạp thành dạng cây dễ hấp thu, đồng thời tiêu diệt vi khuẩn có hại và hạt cỏ."
+      },
+      {
+        question: "4. Ưu điểm nổi bật nhất của phân hữu cơ so với phân vô cơ (hóa học) là gì?",
+        options: [
+          "A. Cung cấp dinh dưỡng cực nhanh làm cây lớn chỉ sau vài giờ",
+          "B. Cải thiện cấu trúc đất, tăng độ phì nhiêu và tơi xốp bền vững",
+          "C. Có hàm lượng dinh dưỡng cao hơn phân đạm urea nhiều lần",
+          "D. Không bao giờ bị phân hủy hay rửa trôi"
+        ],
+        answer: 1,
+        explanation: "Phân hữu cơ bổ sung mùn, nuôi dưỡng vi sinh vật đất, nâng cao khả năng giữ nước/dinh dưỡng và phòng chống chai xám acid hóa đất."
+      },
+      {
+        question: "5. Nhược điểm chính của phân bón hữu cơ truyền thống là gì?",
+        options: [
+          "A. Dễ gây cháy lá và làm chua đất nhanh chóng",
+          "B. Hàm lượng dinh dưỡng thấp, tác dụng chậm, khối lượng dùng lớn",
+          "C. Nguy cơ gây nổ cao khi bảo quản",
+          "D. Không chứa nguyên tố dinh dưỡng đa lượng nào"
+        ],
+        answer: 1,
+        explanation: "Do dinh dưỡng phân tán ở hàm lượng thấp hơn phân hóa học nên phân hữu cơ đòi hỏi khối lượng bón lớn và cần thời gian phân giải."
+      },
+      {
+        question: "6. Thành phần cốt lõi có trong phân bón hữu cơ vi sinh là gì?",
+        options: [
+          "A. Các hóa chất diệt trừ cỏ dại tổng hợp",
+          "B. Các chủng vi sinh vật hữu ích (cố định đạm, phân giải lân, phân giải cellulose)",
+          "C. Hàm lượng lớn muối kali chloride tinh khiết",
+          "D. Dung dịch acid nitric đặc"
+        ],
+        answer: 1,
+        explanation: "Phân hữu cơ vi sinh được phối trộn các chủng vi sinh vật sống hữu ích giúp thúc đẩy quá trình chuyển hóa các chất trong đất thành dạng hòa tan."
+      },
+      {
+        question: "7. Acid humic và acid fulvic trong mùn hữu cơ có vai trò quan trọng gì đối với cây?",
+        options: [
+          "A. Kích thích bộ rễ phát triển, tăng cường khả năng hấp thu khoáng chất",
+          "B. Làm lá cây bị rụng để tạo chồi mới",
+          "C. Tiêu diệt toàn bộ hệ vi sinh vật trong đất",
+          "D. Ngăn cản cây trồng quang hợp"
+        ],
+        answer: 0,
+        explanation: "Acid humic và fulvic là thành phần mùn quý giá, giúp giải độc cho đất, kích thích bộ rễ phát triển mạnh và tăng khả năng trao đổi ion."
+      },
+      {
+        question: "8. Phân trùn quế được đánh giá cao trong nông nghiệp sạch vì lý do nào?",
+        options: [
+          "A. Chứa hàm lượng chất hóa học vô cơ bốc hơi nhanh",
+          "B. Giàu dinh dưỡng dễ tan, chứa vi sinh vật có lợi và an toàn cho cây",
+          "C. Được sản xuất từ quặng khoáng rắn",
+          "D. Cần bón với acid để phát huy tác dụng"
+        ],
+        answer: 1,
+        explanation: "Phân trùn quế (phân hữu cơ vi sinh tự nhiên từ chất thải trùn quế) rất giàu dinh dưỡng, kèn hệ vi sinh vật phong phú, an toàn không gây cháy rễ."
+      },
+      {
+        question: "9. Khi đất bị nén chặt, chai cứng do dùng nhiều phân hóa học, biện pháp khôi phục hiệu quả nhất là gì?",
+        options: [
+          "A. Tăng cường bón bổ sung phân bón hữu cơ và kết hợp vôi cải tạo",
+          "B. Ngừng tưới nước hoàn toàn trong nhiều tháng",
+          "C. Bón thêm gấp đôi lượng phân đạm hóa học",
+          "D. Đốt toàn bộ bề mặt đất"
+        ],
+        answer: 0,
+        explanation: "Bón phân hữu cơ bổ sung mùn tơi xốp, kết hợp bón vôi hạ chua là phương pháp căn bản để khôi phục cấu trúc và hệ sinh thái đất."
+      },
+      {
+        question: "10. Nông nghiệp bền vững hiện nay khuyến khích nguyên tắc bón phân nào?",
+        options: [
+          "A. Thay thế 100% phân hữu cơ và cấm tuyệt đối phân vô cơ",
+          "B. Kết hợp cân đối giữa phân hữu cơ (cải tạo đất) và phân vô cơ (đáp ứng kịp thời)",
+          "C. Chỉ dùng thuốc hóa học bảo vệ thực vật",
+          "D. Không bón bất kỳ loại phân nào cho cây"
+        ],
+        answer: 1,
+        explanation: "Bón phân cân đối kết hợp giữa phân hữu cơ (xây dựng nền đất khỏe) và phân vô cơ (cung cấp nhanh dinh dưỡng lúc cây cần) là chìa khóa nông nghiệp xanh."
+      }
+    ];
+
+    // Game Variables
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    // DOM Elements
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const explanationBox = document.getElementById('explanation-box');
+    const explanationTitle = document.getElementById('explanation-title');
+    const explanationDesc = document.getElementById('explanation-desc');
+    const nextBtn = document.getElementById('next-btn');
+    const questionBadge = document.getElementById('question-badge');
+    const scoreText = document.getElementById('score-text');
+    const progressBar = document.getElementById('progress-bar');
+
+    function startGame() {
+      initAudio();
+      currentQuestion = 0;
+      score = 0;
+      welcomeScreen.classList.add('hidden');
+      resultScreen.classList.add('hidden');
+      quizScreen.classList.remove('hidden');
+      quizScreen.classList.add('flex');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      answered = false;
+      const q = questions[currentQuestion];
+
+      // Update UI Header
+      questionBadge.innerText = `Câu ${currentQuestion + 1} / ${questions.length}`;
+      scoreText.innerText = `Điểm: ${score}`;
+      progressBar.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+
+      // Set Question
+      questionText.innerText = q.question;
+
+      // Reset Boxes
+      explanationBox.classList.add('hidden');
+      nextBtn.classList.add('hidden');
+
+      // Render Options
+      optionsContainer.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `option-btn w-full p-4 text-left rounded-2xl border-2 border-slate-200 bg-white font-semibold text-slate-700 hover:border-emerald-500 hover:bg-emerald-50/50 flex items-center justify-between text-sm sm:text-base`;
+        btn.innerHTML = `
+          <span>${opt}</span>
+          <i class="fa-regular fa-circle text-slate-300 option-icon text-lg"></i>
+        `;
+        btn.onclick = () => selectAnswer(idx);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(selectedIdx) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[currentQuestion];
+      const buttons = optionsContainer.querySelectorAll('.option-btn');
+
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        const icon = btn.querySelector('.option-icon');
+
+        if (idx === q.answer) {
+          // Correct Styling
+          btn.classList.remove('border-slate-200', 'bg-white');
+          btn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900', 'font-bold');
+          icon.className = 'fa-solid fa-circle-check text-emerald-600 text-xl';
+        }
+
+        if (selectedIdx === idx && selectedIdx !== q.answer) {
+          // Wrong Selection Styling
+          btn.classList.remove('border-slate-200', 'bg-white');
+          btn.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900');
+          icon.className = 'fa-solid fa-circle-xmark text-rose-500 text-xl';
+        }
+      });
+
+      // Feedback & Score
+      if (selectedIdx === q.answer) {
+        score += 10;
+        scoreText.innerText = `Điểm: ${score}`;
+        playSound('correct');
+        explanationTitle.className = 'flex items-center gap-2 font-bold mb-1 text-emerald-700';
+        explanationTitle.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Chính xác! (+10 điểm)</span>';
+        explanationBox.className = 'p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-sm leading-relaxed mb-6 block animate-bounce-short';
+      } else {
+        playSound('wrong');
+        explanationTitle.className = 'flex items-center gap-2 font-bold mb-1 text-rose-700';
+        explanationTitle.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>Chưa đúng rồi!</span>';
+        explanationBox.className = 'p-4 rounded-2xl bg-rose-50 border border-rose-200 text-sm leading-relaxed mb-6 block';
+      }
+
+      explanationDesc.innerText = q.explanation;
+      nextBtn.classList.remove('hidden');
+      nextBtn.classList.add('flex');
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      quizScreen.classList.add('hidden');
+      quizScreen.classList.remove('flex');
+      resultScreen.classList.remove('hidden');
+      resultScreen.classList.add('flex');
+
+      document.getElementById('final-score').innerText = `${score} / 100`;
+
+      const rankTitle = document.getElementById('rank-title');
+      const rankDesc = document.getElementById('rank-description');
+      const badgeIcon = document.getElementById('badge-icon');
+      const badgeContainer = document.getElementById('badge-icon-container');
+
+      playSound('finish');
+
+      if (score === 100) {
+        rankTitle.innerText = "Chuyên Gia Nông Nghiệp Xanh";
+        rankDesc.innerText = "Tuyệt vời! Bạn trả lời chính xác 100% câu hỏi. Bạn là một nhà nông thông thái Am hiểu tường tận về phân bón hữu cơ và bảo vệ đất!";
+        badgeIcon.className = "fa-solid fa-trophy text-5xl text-amber-500";
+        badgeContainer.className = "w-24 h-24 rounded-full bg-amber-50 border-4 border-amber-300 flex items-center justify-center mb-4 shadow-lg animate-bounce-short";
+        
+        // Trigger Confetti
+        if (window.confetti) {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+      } else if (score >= 70) {
+        rankTitle.innerText = "Nhà Nông Thông Thái";
+        rankDesc.innerText = "Chúc mừng! Kiến thức Chuyên đề Hóa học 11 của bạn rất vững vàng. Hãy tiếp tục phát huy tinh thần học tập nhé!";
+        badgeIcon.className = "fa-solid fa-award text-5xl text-emerald-600";
+        badgeContainer.className = "w-24 h-24 rounded-full bg-emerald-50 border-4 border-emerald-300 flex items-center justify-center mb-4 shadow-lg";
+      } else if (score >= 50) {
+        rankTitle.innerText = "Tập Sự Nông Nghiệp";
+        rankDesc.innerText = "Kết quả khá tốt! Bạn đã nắm được nền tảng căn bản, hãy đọc thêm bài học SGK để củng cố các câu còn nhầm lẫn nhé.";
+        badgeIcon.className = "fa-solid fa-seedling text-5xl text-emerald-500";
+        badgeContainer.className = "w-24 h-24 rounded-full bg-slate-50 border-4 border-slate-200 flex items-center justify-center mb-4 shadow-md";
+      } else {
+        rankTitle.innerText = "Học Viên Tiềm Năng";
+        rankDesc.innerText = "Đừng nản lòng nhé! Hãy xem lại tài liệu bài 3 Phân Bón Hữu Cơ và thử sức lại một lần nữa để chinh phục điểm tuyệt đối!";
+        badgeIcon.className = "fa-solid fa-book-open-reader text-5xl text-blue-500";
+        badgeContainer.className = "w-24 h-24 rounded-full bg-blue-50 border-4 border-blue-200 flex items-center justify-center mb-4 shadow-md";
+      }
+    }
+
+    function restartGame() {
+      startGame();
+    }
+  </script>
+</body>
+</html>
